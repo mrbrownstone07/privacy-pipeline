@@ -8,9 +8,12 @@ dependencies = [
     "matplotlib>=3.10.8",
     "networkx>=3.6.1",
     "numpy>=2.4.3",
+    "opacus>=1.5.4",
     "pandas>=3.0.1",
     "pygsp>=0.6.1",
     "scikit-learn>=1.8.0",
     "scipy>=1.17.1",
     "seaborn>=0.13.2",
+    "torch>=2.11.0",
+    "tsfel>=0.2.0",
 ]
