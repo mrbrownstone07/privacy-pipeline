@@ -1,7 +1,7 @@
 [project]
 name = "privacy-pipeline"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.2.0"
+description = "Differential privacy on graph Laplacians for spectral embeddings"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
@@ -11,6 +11,8 @@ dependencies = [
     "opacus>=1.5.4",
     "pandas>=3.0.1",
     "pygsp>=0.6.1",
+    "pywavelets>=1.6.0",
+    "pyyaml>=6.0",
     "scikit-learn>=1.8.0",
     "scipy>=1.17.1",
     "seaborn>=0.13.2",

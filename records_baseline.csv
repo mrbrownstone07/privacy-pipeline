@@ -1,3 +1,0 @@
-stage,macro_f1,adv_auc,adv_acc,priv_gain,random_baseline_priv_gain
-Raw Features,0.9946,0.9986499999999999,0.990325,-0.240325,
-Clean Embedding,0.9243,0.8156749999999999,0.785325,-0.035350000000000006,
