@@ -7,6 +7,7 @@ import pandas as pd
 import pywt
 from pathlib import Path
 from scipy.signal import find_peaks
+from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 
 
@@ -213,5 +214,6 @@ def load_dataset(
 
 
 def preprocess_features(X: np.ndarray) -> np.ndarray:
-    """StandardScaler fit_transform."""
+    """Impute NaN with column means, then StandardScaler fit_transform."""
+    X = SimpleImputer(strategy="mean").fit_transform(X)
     return StandardScaler().fit_transform(X)

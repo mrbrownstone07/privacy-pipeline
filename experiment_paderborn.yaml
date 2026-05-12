@@ -1,7 +1,7 @@
 # ── Data ─────────────────────────────────────────────────────────────────────
 data:
-  file_path: features_raw_0_overlap.csv
-  meta_cols: [file_id, fault_size, load]
+  file_path: paderborn_features.csv
+  meta_cols: [file_id, experiment, fault_size, load]
   label_col: label
   feature_groups: null               # null = all columns; or [time, frequency, wpd, acf]
 
@@ -32,7 +32,7 @@ evaluation:
 
 # ── Output ────────────────────────────────────────────────────────────────────
 output:
-  results_dir: results
+  results_dir: results_paderborn
   figures_dir: figures
   save_csv: true
   save_figures: true

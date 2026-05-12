@@ -6,11 +6,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
-
 from .config import ExperimentConfig, load_config
 from .evaluate import AttackResult, run_attack_all_classes, run_classification
-from .features import Dataset, load_dataset
+from .features import Dataset, load_dataset, preprocess_features
 from .graph import DPLaplacianEigenmaps, EmbeddingResult
 from .noise import build_noise_mechanism
 from .visualize import (plot_fiedler_evolution, plot_privacy_utility_tradeoff,
@@ -117,7 +115,7 @@ class PrivacyExperiment:
             feature_groups= dc.feature_groups,
         )
         return Dataset(
-            X           = StandardScaler().fit_transform(ds.X),
+            X           = preprocess_features(ds.X),
             y           = ds.y,
             target_names= ds.target_names,
         )

@@ -5,6 +5,7 @@ description = "Differential privacy on graph Laplacians for spectral embeddings"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "ipykernel>=7.2.0",
     "matplotlib>=3.10.8",
     "networkx>=3.6.1",
     "numpy>=2.4.3",

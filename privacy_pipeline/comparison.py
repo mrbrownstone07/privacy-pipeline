@@ -27,7 +27,7 @@ from .features import Dataset, load_dataset
 from .graph import DPLaplacianEigenmaps
 from .noise import build_noise_mechanism
 from .pipelines import EmbeddingSpaceNoisePipeline, FeatureSpaceNoisePipeline
-from sklearn.preprocessing import StandardScaler
+from .features import preprocess_features as _preprocess
 
 
 # ── Typed result types ────────────────────────────────────────────────────────
@@ -287,7 +287,7 @@ class ComparisonExperiment:
             feature_groups= dc.feature_groups,
         )
         return Dataset(
-            X           = StandardScaler().fit_transform(ds.X),
+            X           = _preprocess(ds.X),
             y           = ds.y,
             target_names= ds.target_names,
         )
