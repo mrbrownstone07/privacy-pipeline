@@ -16,15 +16,14 @@ Usage
 
 Notes on library constants
 --------------------------
-SEG_LEN = 1024 samples  (hardcoded in privacy_pipeline.features)
-  At 64 kHz this gives ~16 ms per segment. CWRU uses 12 kHz → ~85 ms.
-  Within-dataset comparisons remain valid; cross-dataset frequency values differ.
+SEG_LEN = 1024 samples  (default in privacy_pipeline.features)
+  After resampling from 64 kHz → 12 kHz each segment covers ~85 ms,
+  identical to the CWRU pipeline.  Frequency-domain columns therefore have
+  the same absolute Hz scale as CWRU.
 
-FS = 12 000 Hz  (hardcoded in privacy_pipeline.features)
-  Frequency-domain column values (dom_freq, freq_center, …) are computed
-  assuming 12 kHz. The absolute Hz values will be wrong for 64 kHz data, but
-  the relative spectral distribution (spec_entropy, ratios) is preserved and
-  sufficient for fault classification.
+FS = 12 000 Hz  (default in privacy_pipeline.features)
+  Signals are resampled to 12 kHz before segmentation so all frequency
+  features are directly comparable with the CWRU dataset.
 
 Output CSV schema
 -----------------
@@ -49,8 +48,18 @@ import numpy as np
 import pandas as pd
 import requests
 from scipy.io import loadmat
+from scipy.signal import resample_poly
 
 from privacy_pipeline import extract_features, segment_signal
+
+
+# ── Sampling-rate constants ───────────────────────────────────────────────────
+# Paderborn vibration data are recorded at 64 kHz.  The privacy_pipeline feature
+# extractors assume FS = 12 kHz (CWRU rate).  Resampling to 12 kHz makes the
+# absolute frequency features directly comparable and gives ~85 ms segments
+# (1024 / 12 kHz) instead of ~16 ms (1024 / 64 kHz).
+PADERBORN_FS = 64_000
+TARGET_FS    = 12_000  # must match privacy_pipeline.features.FS
 
 
 # ── Dataset registry ──────────────────────────────────────────────────────────
@@ -162,15 +171,20 @@ def _extract(rar_path: Path, out_dir: Path) -> None:
 
 # ── Mat file reading ───────────────────────────────────────────────────────────
 
-def _load_vibration(mat_path: Path) -> np.ndarray | None:
+def _load_vibration(mat_path: Path, target_fs: int = TARGET_FS) -> np.ndarray | None:
     """
-    Return the vibration channel from one Paderborn .mat file.
+    Return the vibration channel from one Paderborn .mat file, resampled to
+    ``target_fs`` (default 12 kHz).
 
     The Paderborn struct stores multiple sensor channels nested inside a MATLAB
     struct array. Following the same logic as the reference loader, this function
     searches fields at struct index 1 and 2 for all arrays longer than 200 000
     samples (≈ 64 kHz × 4 s) and returns the last one, which corresponds to
     the accelerometer (vibration) channel.
+
+    The raw signal is then resampled from 64 kHz down to ``target_fs`` using
+    ``scipy.signal.resample_poly`` (polyphase filtering) so that frequency-domain
+    features are directly comparable with the CWRU pipeline.
     """
     mat = loadmat(str(mat_path))
     key = [k for k in mat if not k.startswith("_")][-1]
@@ -192,7 +206,15 @@ def _load_vibration(mat_path: Path) -> np.ndarray | None:
         except (TypeError, IndexError, ValueError):
             continue
 
-    return found[-1] if found else None
+    if not found:
+        return None
+
+    sig = found[-1]
+    # Resample 64 kHz → target_fs (e.g. 12 kHz) via exact rational ratio
+    up, down = 3, 16  # 64_000 * 3 / 16 = 12_000
+    if target_fs != PADERBORN_FS:
+        sig = resample_poly(sig, up=up, down=down)
+    return sig
 
 
 # ── Per-bearing feature extraction ────────────────────────────────────────────
@@ -243,7 +265,7 @@ def _process_bearing(
                 print(f"    [warn] No vibration channel: {mat_path.name}")
                 continue
 
-            segs = segment_signal(signal)
+            segs = segment_signal(signal, seg_len=None)  # uses module default (1024)
             if not segs:
                 continue
 
@@ -496,7 +518,7 @@ subcommand: sample
     # each dict, so the extra 'experiment' key would be dropped otherwise.
     experiments = [m["experiment"] for m in all_meta]
 
-    df = extract_features(all_segments, all_meta, groups=args.groups)
+    df = extract_features(all_segments, all_meta, groups=args.groups, fs=TARGET_FS)
 
     # Add experiment column and rename fault_type → label
     df.insert(df.columns.get_loc("fault_type"), "experiment", experiments)

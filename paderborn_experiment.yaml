@@ -1,6 +1,12 @@
 # ── Data ─────────────────────────────────────────────────────────────────────
+# NOTE: paderborn_features.csv contains 602 579 rows — far too large for the
+# k-NN graph + eigendecomposition step in a single run.  Use the stratified
+# subset (8 767 rows, same scale as CWRU) for the privacy-pipeline experiment.
+# If you re-extract features with the fixed extract_paderborn.py (64 kHz →
+# 12 kHz resampling), regenerate the subset with:
+#   python extract_paderborn.py sample --from paderborn_features.csv --n 9000 --out paderborn_subset.csv
 data:
-  file_path: paderborn_features.csv
+  file_path: paderborn_subset.csv
   meta_cols: [file_id, experiment, fault_size, load]
   label_col: label
   feature_groups: null               # null = all columns; or [time, frequency, wpd, acf]

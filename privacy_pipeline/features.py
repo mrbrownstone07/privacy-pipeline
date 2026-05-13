@@ -71,9 +71,10 @@ def _time_features(x: np.ndarray) -> dict:
                 shape_factor=rms / mean_abs, peak_to_peak=p2p)
 
 
-def _freq_features(x: np.ndarray) -> dict:
+def _freq_features(x: np.ndarray, fs: float | None = None) -> dict:
+    fs = fs if fs is not None else FS
     fft_v  = np.fft.rfft(x)
-    freqs  = np.fft.rfftfreq(len(x), d=1.0 / FS)
+    freqs  = np.fft.rfftfreq(len(x), d=1.0 / fs)
     amp    = np.abs(fft_v)
     amp_sq = amp ** 2
     s_amp  = amp.sum() + 1e-12
@@ -137,6 +138,7 @@ def extract_features(
     segments: list[np.ndarray],
     metadata: list[dict],
     groups: list[str] | None = None,
+    fs: float | None = None,
 ) -> pd.DataFrame:
     """
     Extract features from pre-segmented signals.
@@ -146,6 +148,7 @@ def extract_features(
     segments : list of 1-D arrays, each length SEG_LEN
     metadata : list of dicts with keys: file_id, fault_type, fault_size, load
     groups   : feature groups — subset of {time, frequency, wpd, acf}; default ['wpd']
+    fs       : sampling frequency in Hz; None uses the module default (12 000 Hz)
 
     Returns
     -------
@@ -157,24 +160,35 @@ def extract_features(
     for seg, meta in zip(segments, metadata):
         row = {k: meta[k] for k in META_COLS}
         if "time"      in groups: row.update(_time_features(seg))
-        if "frequency" in groups: row.update(_freq_features(seg))
+        if "frequency" in groups: row.update(_freq_features(seg, fs=fs))
         if "wpd"       in groups: row.update(_wpd_features(seg))
         if "acf"       in groups: row["acf_burst_spacing"] = _acf_burst_spacing(seg)
         records.append(row)
     return pd.DataFrame(records, columns=META_COLS + feature_columns(groups))
 
 
-def segment_signal(signal: np.ndarray, stride: int = STRIDE) -> list[np.ndarray]:
+def segment_signal(
+    signal: np.ndarray,
+    stride: int = STRIDE,
+    seg_len: int | None = None,
+) -> list[np.ndarray]:
     """
-    Sliding-window segmentation. stride=0 means no overlap (step = SEG_LEN).
+    Sliding-window segmentation. stride=0 means no overlap (step = seg_len).
+
+    Parameters
+    ----------
+    signal  : 1-D time-series
+    stride  : step size; 0 means no overlap (step = seg_len)
+    seg_len : window length in samples; None uses the module default (1024)
     """
-    effective = SEG_LEN if stride == 0 else stride
+    seg_len = seg_len if seg_len is not None else SEG_LEN
+    effective = seg_len if stride == 0 else stride
     if effective < 0:
         raise ValueError(f"stride must be >= 0, got {stride}")
-    segs = [signal[s: s + SEG_LEN]
-            for s in range(0, len(signal) - SEG_LEN + 1, effective)]
-    overlap = f"{100*(1 - effective/SEG_LEN):.0f}% overlap" if stride else "no overlap"
-    print(f"  Segmentation: SEG_LEN={SEG_LEN}, stride={effective} ({overlap}), segments={len(segs)}")
+    segs = [signal[s: s + seg_len]
+            for s in range(0, len(signal) - seg_len + 1, effective)]
+    overlap = f"{100*(1 - effective/seg_len):.0f}% overlap" if stride else "no overlap"
+    print(f"  Segmentation: seg_len={seg_len}, stride={effective} ({overlap}), segments={len(segs)}")
     return segs
 
 

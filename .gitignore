@@ -29,3 +29,4 @@ results_paderborn/records_baseline.csv
 results_paderborn/records_fiedler.csv
 results_paderborn/records_metrics.csv
 *.csv
+/results_paderborn
