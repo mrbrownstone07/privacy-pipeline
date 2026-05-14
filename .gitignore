@@ -6,29 +6,12 @@ dist/
 wheels/
 *.egg-info
 results/
+results_paderborn/
 datasets/
 *.png
 
 # Virtual environments
 .venv
 
-results_paderborn/figures/embedding_shift_eps_0.05.png
-results_paderborn/figures/embedding_shift_eps_0.1.png
-results_paderborn/figures/embedding_shift_eps_0.2.png
-results_paderborn/figures/embedding_shift_eps_0.5.png
-results_paderborn/figures/embedding_shift_eps_1.0.png
-results_paderborn/figures/embedding_shift_eps_2.0.png
-results_paderborn/figures/fiedler_evolution.png
-results_paderborn/figures/graph_perturbation_eps_0.05.png
-results_paderborn/figures/graph_perturbation_eps_0.1.png
-results_paderborn/figures/graph_perturbation_eps_0.2.png
-results_paderborn/figures/graph_perturbation_eps_0.5.png
-results_paderborn/figures/graph_perturbation_eps_1.0.png
-results_paderborn/figures/graph_perturbation_eps_2.0.png
-results_paderborn/figures/privacy_utility_tradeoff.png
-results_paderborn/records_baseline.csv
-results_paderborn/records_fiedler.csv
-results_paderborn/records_metrics.csv
-*.csv
-/results_paderborn
 report.tex
+paderborn_full_feature.csv
