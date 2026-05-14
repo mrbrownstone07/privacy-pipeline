@@ -7,6 +7,7 @@ wheels/
 *.egg-info
 results/
 datasets/
+*.png
 
 # Virtual environments
 .venv
@@ -30,3 +31,4 @@ results_paderborn/records_fiedler.csv
 results_paderborn/records_metrics.csv
 *.csv
 /results_paderborn
+report.tex
